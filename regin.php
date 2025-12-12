@@ -65,9 +65,25 @@
 				var _login = document.getElementsByName("_login")[0].value;
 				var _password = document.getElementsByName("_password")[0].value;
 				var _passwordCopy = document.getElementsByName("_passwordCopy")[0].value;
-				
+
+				if(_login == "") {
+					alert("Введите логин.");
+					return;
+				}
+
+				if(_password == "") {
+					alert("Введите пароль.");
+					return;
+				}
+
+				if(CheckPassword(_password) == false) {
+					alert("Логин не соответствует следующим требованиям.")
+				}
+
 				if(_login != "") {
 					if(_password != "") {
+						// Добавить проверку на корректность пароля
+						
 						if(_password == _passwordCopy) {
 							loading.style.display = "block";
 							button.className = "button_diactive";
@@ -112,6 +128,11 @@
 				} else alert("Введите логин.");
 			}
 			
+			function CheckPassword(value) {
+				let regex = /(?=.*[0-9])(?=.*[!@#$%^&?*\-_=])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z!@#$%^&?*\-_=]{8,}/;
+				return regex.test(value);
+			}
+
 			function PressToEnter(e) {
 				if (e.keyCode == 13) {
 					var _login = document.getElementsByName("_login")[0].value;

@@ -5,6 +5,10 @@
 	$login = $_POST['login'];
 	$password = $_POST['password'];
 	
+	# Проверить пароль на соответствие
+	echo preg_match('/[a-z]{0,9}/', "test");
+	exit;
+
 	// ищем пользователя
 	$query_user = $mysqli->query("SELECT * FROM `users` WHERE `login`='".$login."'");
 	$id = -1;
