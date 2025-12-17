@@ -77,78 +77,108 @@
 				}
 
 				if(CheckPassword(_password) == false) {
-					alert("Логин не соответствует следующим требованиям.")
+					alert("Пароль не соответствует следующим требованиям: \n" +
+						"• Более 8 символов\n" +
+              			"• Содержит латинские буквы\n" +
+              			"• Содержит хотя бы одну заглавную букву\n" +
+              			"• Содержит цифры\n" +
+              			"• Содержит специальные символы (!@#$%^&?*-_=)");
+        			return;
 				}
-
-				if(_login != "") {
-					if(_password != "") {
-						// Добавить проверку на корректность пароля
 						
-						if(_password == _passwordCopy) {
-							loading.style.display = "block";
-							button.className = "button_diactive";
+				if(_password == _passwordCopy) {
+					loading.style.display = "block";
+					button.className = "button_diactive";
 							
-							var data = new FormData();
-							data.append("login", _login);
-							data.append("password", _password);
+					var data = new FormData();
+					data.append("login", _login);
+					data.append("password", _password);
 							
-							// AJAX запрос
-							$.ajax({
-								url         : 'ajax/regin_user.php',
-								type        : 'POST', // важно!
-								data        : data,
-								cache       : false,
-								dataType    : 'html',
-								// отключаем обработку передаваемых данных, пусть передаются как есть
-								processData : false,
-								// отключаем установку заголовка типа запроса. Так jQuery скажет серверу что это строковой запрос
-								contentType : false, 
-								// функция успешного ответа сервера
-								success: function (_data) {
-									console.log("Авторизация прошла успешно, id: " +_data);
-									if(_data == -1) {
-										alert("Пользователь с таким логином существует.");
-										loading.style.display = "none";
-										button.className = "button";
-									} else {
-										location.reload();
-										loading.style.display = "none";
-										button.className = "button";
-									}
-								},
-								// функция ошибки
-								error: function( ){
-									console.log('Системная ошибка!');
-									loading.style.display = "none";
-									button.className = "button";
-								}
-							});
-						} else alert("Пароли не совподают.");
-					} else alert("Введите пароль.");
-				} else alert("Введите логин.");
+					// AJAX запрос
+        			$.ajax({
+            			url         : 'ajax/regin_user.php',
+            			type        : 'POST',
+            			data        : data,
+            			cache       : false,
+            			dataType    : 'html',
+            			processData : false,
+            			contentType : false, 
+            			success: function (_data) {
+            			    console.log("Ответ сервера: " + _data);
+
+            			    if(_data.startsWith("ERROR:")) {
+            			        var errorMessage = _data.substring(6);
+            			        alert(errorMessage);
+            			    } else if(_data.startsWith("ERROR_PASSWORD:")) {
+            			        var errorMessage = _data.substring(15);
+            			        alert("Ошибка в пароле: " + errorMessage);
+            			    } else if(_data == "-1") {
+            			        alert("Пользователь с таким логином существует.");
+            			    } else {
+            			        location.reload();
+            			        return;
+            			    }
+						
+            			    loading.style.display = "none";
+            			    button.className = "button";
+            			},
+            			error: function( ){
+            			    console.log('Системная ошибка!');
+            			    alert('Произошла системная ошибка. Попробуйте позже.');
+            			    loading.style.display = "none";
+            			    button.className = "button";
+            			}
+        			});
+    			} else {
+        			alert("Пароли не совпадают.");
+    			}
 			}
-			
+
 			function CheckPassword(value) {
-				let regex = /(?=.*[0-9])(?=.*[!@#$%^&?*\-_=])(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z!@#$%^&?*\-_=]{8,}/;
-				return regex.test(value);
+			    // Проверка длины (более 8 символов = минимум 9)
+			    if(value.length < 9) {
+			        return false;
+			    }
+			
+			    // Проверка наличия латинских букв
+			    if(!/[a-zA-Z]/.test(value)) {
+			        return false;
+			    }
+			
+			    // Проверка наличия заглавной буквы
+			    if(!/[A-Z]/.test(value)) {
+			        return false;
+			    }
+			
+			    // Проверка наличия цифр
+			    if(!/[0-9]/.test(value)) {			
+			        return false;
+			    }
+			
+			    // Проверка наличия специальных символов
+			    if(!/[!@#$%^&?*\-_=]/.test(value)) {			
+			        return false;
+			    }
+			
+			    // Дополнительная проверка на разрешенные символы (опционально)
+			    if(!/^[a-zA-Z0-9!@#$%^&?*\-_=]+$/.test(value)) {			
+			        return false;
+			    }
+			
+			    return true;			
 			}
 
 			function PressToEnter(e) {
 				if (e.keyCode == 13) {
 					var _login = document.getElementsByName("_login")[0].value;
-					var _password = document.getElementsByName("_password")[0].value;
-					var _passwordCopy = document.getElementsByName("_passwordCopy")[0].value;
-					
-					if(_password != "") {
-						if(_login != "") {
-							if(_passwordCopy != "") {
-								RegIn();
-							}
-						}
-					}
-				}
+				    var _password = document.getElementsByName("_password")[0].value;
+			        var _passwordCopy = document.getElementsByName("_passwordCopy")[0].value;
+
+			        if(_login != "" && _password != "" && _passwordCopy != "") {
+			           RegIn();
+			        }
+			    }
 			}
-			
 		</script>
 	</body>
 </html>
