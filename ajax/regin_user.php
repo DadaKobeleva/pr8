@@ -28,7 +28,6 @@ function validatePasswordPHP($password) {
     }
     
     // 5. Проверка наличия специальных символов
-    // Используем те же символы что и в JavaScript: !@#$%^&?*-_=
     if(!preg_match('/[!@#$%^&?*\-_=]/', $password)) {
         return "Пароль должен содержать специальные символы (!@#$%^&?*-_=)";
     }
@@ -38,58 +37,47 @@ function validatePasswordPHP($password) {
         return "Пароль содержит недопустимые символы";
     }
     
-    return true; // Пароль прошел все проверки
+    return true;
 }
 
-// Проверяем введенные данные
 if(empty($login)) {
-    echo "ERROR:Введите логин";
+    echo "Введите логин";
     exit;
 }
 
 if(empty($password)) {
-    echo "ERROR:Введите пароль";
+    echo "Введите пароль";
     exit;
 }
 
-// Проверяем пароль на соответствие требованиям
 $passwordValidation = validatePasswordPHP($password);
 if($passwordValidation !== true) {
     echo "ERROR_PASSWORD:" . $passwordValidation;
     exit;
 }
 
-// Проверяем, не существует ли уже пользователь с таким логином
-// Используем подготовленные запросы для защиты от SQL-инъекций
 $check_query = $mysqli->prepare("SELECT id FROM users WHERE login = ?");
 $check_query->bind_param("s", $login);
 $check_query->execute();
 $check_query->store_result();
 
 if($check_query->num_rows > 0) {
-    echo "ERROR:Пользователь с таким логином уже существует";
+    echo "Пользователь с таким логином уже существует";
     exit;
 }
 $check_query->close();
 
-// Хешируем пароль для безопасного хранения
-$hashed_password = password_hash($password, PASSWORD_DEFAULT);
+$plain_password = $password;
 
-// Добавляем нового пользователя
 $insert_query = $mysqli->prepare("INSERT INTO users (login, password, roll) VALUES (?, ?, 0)");
-$insert_query->bind_param("ss", $login, $hashed_password);
+$insert_query->bind_param("ss", $login, $plain_password);
 
 if($insert_query->execute()) {
-    // Получаем ID нового пользователя
     $user_id = $mysqli->insert_id;
-    
-    // Сохраняем в сессии
     $_SESSION['user'] = $user_id;
-    
-    // Возвращаем ID пользователя
     echo $user_id;
 } else {
-    echo "ERROR:Ошибка при регистрации пользователя";
+    echo "Ошибка при регистрации пользователя";
 }
 
 $insert_query->close();
