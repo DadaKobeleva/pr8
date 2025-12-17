@@ -6,24 +6,28 @@ $login = isset($_POST['login']) ? trim($_POST['login']) : '';
 $password = isset($_POST['password']) ? trim($_POST['password']) : '';
 
 if(empty($login) || empty($password)) {
-    echo "Заполните все поля";
+    echo "ERROR_EMPTY";
     exit;
 }
 
-$safe_login = $mysqli->real_escape_string($login);
-$safe_password = $mysqli->real_escape_string($password);
+// Ищем пользователя по логину
+$stmt = $mysqli->prepare("SELECT id, password FROM users WHERE login = ?");
+$stmt->bind_param("s", $login);
+$stmt->execute();
+$stmt->bind_result($id, $hashed_password);
+$stmt->store_result();
 
-$query_user = $mysqli->query("SELECT * FROM `users` WHERE `login`='$safe_login' AND `password`= '$safe_password'");
-$id = -1;
-
-while($user_read = $query_user->fetch_row()) {
-    $id = $user_read[0];
-}
-
-if($id != -1) {
-    $_SESSION['user'] = $id;
-    echo md5(md5($id));
+if($stmt->num_rows > 0) {
+    $stmt->fetch();
+    
+    if(password_verify($password, $hashed_password)) {
+        $_SESSION['user'] = $id;
+        echo md5(md5($id));
+    } else {
+        echo "ERROR_AUTH";
+    }
 } else {
-    echo "Неверный логин или пароль";
+    echo "ERROR_AUTH";
 }
+$stmt->close();
 ?>

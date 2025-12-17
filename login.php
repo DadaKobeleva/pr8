@@ -57,66 +57,101 @@
 		</div>
 		
 		<script>
-			function LogIn() {
-				var loading = document.getElementsByClassName("loading")[0];
-				var button = document.getElementsByClassName("button")[0];
-				
-				var _login = document.getElementsByName("_login")[0].value;
-				var _password = document.getElementsByName("_password")[0].value;
-				loading.style.display = "block";
-				button.className = "button_diactive";
-				
-				var data = new FormData();
-				data.append("login", _login);
-				data.append("password", _password);
-				
-				// AJAX запрос
-				$.ajax({
-					url         : 'ajax/login_user.php',
-					type        : 'POST', // важно!
-					data        : data,
-					cache       : false,
-					dataType    : 'html',
-					// отключаем обработку передаваемых данных, пусть передаются как есть
-					processData : false,
-					// отключаем установку заголовка типа запроса. Так jQuery скажет серверу что это строковой запрос
-					contentType : false, 
-					// функция успешного ответа сервера
-					success: function (_data) {
-						console.log("Авторизация прошла успешно, id: " +_data);
-						if(_data == "") {
-							loading.style.display = "none";
-							button.className = "button";
-							alert("Логин или пароль не верный.");
-						} else {
-							localStorage.setItem("token", _data);
-							location.reload();
-							loading.style.display = "none";
-							button.className = "button";
-						}
-					},
-					// функция ошибки
-					error: function( ){
-						console.log('Системная ошибка!');
-						loading.style.display = "none";
-						button.className = "button";
-					}
-				});
-			}
-			
-			function PressToEnter(e) {
-				if (e.keyCode == 13) {
-					var _login = document.getElementsByName("_login")[0].value;
-					var _password = document.getElementsByName("_password")[0].value;
-					
-					if(_password != "") {
-						if(_login != "") {
-							LogIn();
-						}
-					}
-				}
-			}
-			
+    		function LogIn() {
+        	var loading = document.getElementsByClassName("loading")[0];
+        	var button = document.getElementsByClassName("button")[0];
+        
+        	var _login = document.getElementsByName("_login")[0].value.trim();
+        	var _password = document.getElementsByName("_password")[0].value;
+
+        
+        	if(_login === "") {
+            	alert("Введите логин.");
+            	return;
+        	}
+        
+        	if(_password === "") {
+            	alert("Введите пароль.");
+            	return;
+        	}
+        
+        	loading.style.display = "block";
+        	button.className = "button_diactive";
+        
+        	var data = new FormData();
+        	data.append("login", _login);
+        	data.append("password", _password);
+        
+        	// AJAX запрос
+        	$.ajax({
+            	url         : 'ajax/login_user.php',
+            	type        : 'POST',
+            	data        : data,
+            	cache       : false,
+            	dataType    : 'html',
+            	processData : false,
+            	contentType : false, 
+            	success: function (_data) {
+            	    console.log("Ответ сервера: " + _data);
+
+            	    if(_data.length === 32 && /^[a-f0-9]{32}$/.test(_data)) {
+            	        localStorage.setItem("token", _data);
+            	        location.reload();
+            	        loading.style.display = "none";
+            	        button.className = "button";
+            	    } 
+            	    else if(_data === "ERROR_EMPTY") {
+            	        alert("Заполните все поля");
+            	        loading.style.display = "none";
+            	        button.className = "button";
+            	    }
+            	    else if(_data === "ERROR_AUTH") {
+            	        alert("Неверный логин или пароль");
+            	        loading.style.display = "none";
+            	        button.className = "button";
+            	    }
+            	    else if(_data === "Неверный логин или пароль") {
+            	        alert("Неверный логин или пароль");
+            	        loading.style.display = "none";
+            	        button.className = "button";
+            	    }
+            	    else if(_data === "Заполните все поля") {
+            	        alert("Заполните все поля");
+            	        loading.style.display = "none";
+            	        button.className = "button";
+            	    }
+            	    else {
+            	        alert("Ошибка авторизации: " + _data);
+            	        loading.style.display = "none";
+            	        button.className = "button";
+            	    }
+            	},
+            	error: function( ){
+                	console.log('Системная ошибка!');
+                	alert('Произошла системная ошибка. Попробуйте позже.');
+                	loading.style.display = "none";
+                	button.className = "button";
+            	}
+        	});
+    	}
+    
+    	function PressToEnter(e) {
+        	if (e.keyCode == 13) {
+            	var _login = document.getElementsByName("_login")[0].value.trim();
+            	var _password = document.getElementsByName("_password")[0].value;
+            
+           	 	if(_login === "" || _password === "") {
+                	if(_login === "") {
+                    	alert("Введите логин.");
+                	} else {
+                    	alert("Введите пароль.");
+                	}
+                	return;
+            	}
+            
+            	LogIn();
+        	}
+    	}
 		</script>
 	</body>
 </html>
